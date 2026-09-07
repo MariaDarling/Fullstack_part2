@@ -1,49 +1,71 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import axios from 'axios'
 
-const Filter = ({ filter, handleFilterChange }) => (
-  <div>
-    filter shown with <input value={filter} onChange={handleFilterChange} />
-  </div>
-)
+const Filter = ({ filterTerm, handleFilterChange }) => {
+  return (
+    <div>
+      filter shown with: <input value={filterTerm} onChange={handleFilterChange} />
+    </div>
+  )
+}
 
-const PersonForm = ({ addPerson, newName, handleNameChange, newNumber, handleNumberChange }) => (
-  <form onSubmit={addPerson}>
-    <div>
-      name: <input value={newName} onChange={handleNameChange} />
-    </div>
-    <div>
-      number: <input value={newNumber} onChange={handleNumberChange} />
-    </div>
-    <div>
-      <button type="submit">add</button>
-    </div>
-  </form>
-)
+const PersonForm = ({ addPerson, newName, handleNameChange, newNumber, handleNumberChange }) => {
+  return (
+    <form onSubmit={addPerson}>
+      <div>
+        name: <input value={newName} onChange={handleNameChange} />
+      </div>
+      <div>
+        number: <input value={newNumber} onChange={handleNumberChange} />
+      </div>
+      <div>
+        <button type="submit">add</button>
+      </div>
+    </form>
+  )
+}
 
-const Persons = ({ personsToShow }) => (
-  <ul>
-    {personsToShow.map(person => (
-      <li key={person.id}>
-        {person.name} {person.number}
-      </li>
-    ))}
-  </ul>
-)
+const Persons = ({ personsToShow }) => {
+  return (
+    <ul>
+      {personsToShow.map(person => (
+        <li key={person.id || person.name}>
+          {person.name} {person.number}
+        </li>
+      ))}
+    </ul>
+  )
+}
 
 const App = () => {
-  const [persons, setPersons] = useState([
-    { name: 'Arto Hellas', number: '040-123456', id: 1 },
-    { name: 'Ada Lovelace', number: '39-44-5323523', id: 2 },
-    { name: 'Dan Abramov', number: '12-43-234345', id: 3 },
-    { name: 'Mary Poppendieck', number: '39-23-6423122', id: 4 }
-  ])
+  const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
-  const [filter, setFilter] = useState('')
+  const [filterTerm, setFilterTerm] = useState('')
 
-  const handleNameChange = (event) => setNewName(event.target.value)
-  const handleNumberChange = (event) => setNewNumber(event.target.value)
-  const handleFilterChange = (event) => setFilter(event.target.value)
+
+  useEffect(() => {
+    axios
+      .get('http://localhost:3001/persons')
+      .then(response => {
+        setPersons(response.data)
+      })
+      .catch(error => {
+        console.error('Error al obtener los datos de la agenda:', error)
+      })
+  }, [])
+
+  const handleNameChange = (event) => {
+    setNewName(event.target.value)
+  }
+
+  const handleNumberChange = (event) => {
+    setNewNumber(event.target.value)
+  }
+
+  const handleFilterChange = (event) => {
+    setFilterTerm(event.target.value)
+  }
 
   const addPerson = (event) => {
     event.preventDefault()
@@ -53,32 +75,33 @@ const App = () => {
     )
 
     if (nameExists) {
-      alert(`${newName} is already added to phonebook`)
+      alert(`${newName.trim()} is already added to phonebook`)
       return
     }
 
     const personObject = {
-      name: newName,
-      number: newNumber,
-      id: persons.length + 1
+      name: newName.trim(),
+      number: newNumber.trim()
     }
 
+   
     setPersons(persons.concat(personObject))
     setNewName('')
     setNewNumber('')
   }
 
-  const personsToShow = filter === ''
+
+  const personsToShow = filterTerm === ''
     ? persons
     : persons.filter(person =>
-        person.name.toLowerCase().includes(filter.toLowerCase())
+        person.name.toLowerCase().includes(filterTerm.toLowerCase())
       )
 
   return (
     <div>
       <h2>Phonebook</h2>
 
-      <Filter filter={filter} handleFilterChange={handleFilterChange} />
+      <Filter filterTerm={filterTerm} handleFilterChange={handleFilterChange} />
 
       <h3>Add a new</h3>
 
