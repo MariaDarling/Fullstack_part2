@@ -1,98 +1,82 @@
-import { useState } from 'react'
+const Header = ({ course }) => <h1>{course}</h1>
 
-const Filter = ({ filter, handleFilterChange }) => (
+const Total = ({ sum }) => <p><strong>total of {sum} exercises</strong></p>
+
+const Part = ({ part }) => 
+  <p>
+    {part.name} {part.exercises}
+  </p>
+
+const Content = ({ parts }) => 
   <div>
-    filter shown with <input value={filter} onChange={handleFilterChange} />
+    {parts.map(part => 
+      <Part key={part.id} part={part} />
+    )}
   </div>
-)
 
-const PersonForm = ({ addPerson, newName, handleNameChange, newNumber, handleNumberChange }) => (
-  <form onSubmit={addPerson}>
-    <div>
-      name: <input value={newName} onChange={handleNameChange} />
-    </div>
-    <div>
-      number: <input value={newNumber} onChange={handleNumberChange} />
-    </div>
-    <div>
-      <button type="submit">add</button>
-    </div>
-  </form>
-)
-
-const Persons = ({ personsToShow }) => (
-  <ul>
-    {personsToShow.map(person => (
-      <li key={person.id}>
-        {person.name} {person.number}
-      </li>
-    ))}
-  </ul>
-)
-
-const App = () => {
-  const [persons, setPersons] = useState([
-    { name: 'Arto Hellas', number: '040-123456', id: 1 },
-    { name: 'Ada Lovelace', number: '39-44-5323523', id: 2 },
-    { name: 'Dan Abramov', number: '12-43-234345', id: 3 },
-    { name: 'Mary Poppendieck', number: '39-23-6423122', id: 4 }
-  ])
-  const [newName, setNewName] = useState('')
-  const [newNumber, setNewNumber] = useState('')
-  const [filter, setFilter] = useState('')
-
-  const handleNameChange = (event) => setNewName(event.target.value)
-  const handleNumberChange = (event) => setNewNumber(event.target.value)
-  const handleFilterChange = (event) => setFilter(event.target.value)
-
-  const addPerson = (event) => {
-    event.preventDefault()
-
-    const nameExists = persons.some(
-      person => person.name.toLowerCase() === newName.trim().toLowerCase()
-    )
-
-    if (nameExists) {
-      alert(`${newName} is already added to phonebook`)
-      return
-    }
-
-    const personObject = {
-      name: newName,
-      number: newNumber,
-      id: persons.length + 1
-    }
-
-    setPersons(persons.concat(personObject))
-    setNewName('')
-    setNewNumber('')
-  }
-
-  const personsToShow = filter === ''
-    ? persons
-    : persons.filter(person =>
-        person.name.toLowerCase().includes(filter.toLowerCase())
-      )
+const Course = ({ course }) => {
+  const total = course.parts.reduce((s, p) => s + p.exercises, 0)
 
   return (
     <div>
-      <h2>Phonebook</h2>
+      <Header course={course.name} />
+      <Content parts={course.parts} />
+      <Total sum={total} />
+    </div>
+  )
+}
 
-      <Filter filter={filter} handleFilterChange={handleFilterChange} />
+const App = () => {
+  const courses = [
+    {
+      name: 'Half Stack application development',
+      id: 1,
+      parts: [
+        {
+          name: 'Fundamentals of React',
+          exercises: 10,
+          id: 1
+        },
+        {
+          name: 'Using props to pass data',
+          exercises: 7,
+          id: 2
+        },
+        {
+          name: 'State of a component',
+          exercises: 14,
+          id: 3
+        },
+        {
+          name: 'Redux',
+          exercises: 11,
+          id: 4
+        }
+      ]
+    }, 
+    {
+      name: 'Node.js',
+      id: 2,
+      parts: [
+        {
+          name: 'Routing',
+          exercises: 3,
+          id: 1
+        },
+        {
+          name: 'Middlewares',
+          exercises: 7,
+          id: 2
+        }
+      ]
+    }
+  ]
 
-      <h3>Add a new</h3>
-
-      <PersonForm 
-        addPerson={addPerson}
-        newName={newName}
-        handleNameChange={handleNameChange}
-        newNumber={newNumber}
-        handleNumberChange={handleNumberChange}
-      />
-
-      <h3>Numbers</h3>
-
-      <Persons personsToShow={personsToShow} />
+  return (
+    <div>
+      {courses.map(course => (
+        <Course key={course.id} course={course} />
+      ))}
     </div>
   )
 }
